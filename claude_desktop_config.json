@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "hello-r-mcp": {
+      "command": "python",
+      "args": [
+        "/Users/jungj2/Dropbox/Metadata/mcp/test_r_mcp/hello_r_bridge.py"
+      ],
+      "env": {}
+    }
+  }
+}
