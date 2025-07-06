@@ -140,6 +140,92 @@ async def add_numbers(a: float, b: float) -> Dict[str, Any]:
         return {"error": str(e), "success": False}
 
 
+@server.tool()
+async def r_stats(data: list[float], operation: str = "mean") -> Dict[str, Any]:
+    """
+    Perform statistical operations on data using R.
+    
+    Args:
+        data: List of numeric values
+        operation: Statistical operation to perform (mean, median, sd, var, min, max, sum, quantile)
+    
+    Returns:
+        Dictionary containing the result and operation details
+    """
+    # Check API health
+    if not await check_api_health():
+        return {
+            "error": "R API server is not running. Please start it with: Rscript hello_r_api.R",
+            "success": False
+        }
+    
+    # Prepare request payload
+    payload = {
+        "data": data,
+        "operation": operation
+    }
+    
+    try:
+        # Make API request
+        response = await http_client.post("/api/stats", json=payload)
+        response.raise_for_status()
+        # Ensure we return a proper dict
+        data = response.json()
+        if isinstance(data, dict):
+            return data
+        else:
+            # If somehow we got a string, try to parse it
+            import json
+            return json.loads(data) if isinstance(data, str) else {"data": data}
+    except httpx.HTTPStatusError as e:
+        return {"error": f"API error: {e.response.text}", "success": False}
+    except Exception as e:
+        return {"error": str(e), "success": False}
+
+
+@server.tool()
+async def r_linear_regression(x: list[float], y: list[float]) -> Dict[str, Any]:
+    """
+    Perform linear regression using R's lm() function.
+    
+    Args:
+        x: Independent variable values
+        y: Dependent variable values
+    
+    Returns:
+        Dictionary containing regression coefficients, R-squared, p-value, etc.
+    """
+    # Check API health
+    if not await check_api_health():
+        return {
+            "error": "R API server is not running. Please start it with: Rscript hello_r_api.R",
+            "success": False
+        }
+    
+    # Prepare request payload
+    payload = {
+        "x": x,
+        "y": y
+    }
+    
+    try:
+        # Make API request
+        response = await http_client.post("/api/lm", json=payload)
+        response.raise_for_status()
+        # Ensure we return a proper dict
+        data = response.json()
+        if isinstance(data, dict):
+            return data
+        else:
+            # If somehow we got a string, try to parse it
+            import json
+            return json.loads(data) if isinstance(data, str) else {"data": data}
+    except httpx.HTTPStatusError as e:
+        return {"error": f"API error: {e.response.text}", "success": False}
+    except Exception as e:
+        return {"error": str(e), "success": False}
+
+
 # Cleanup function
 async def cleanup():
     """Cleanup resources on shutdown"""
