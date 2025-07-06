@@ -50,17 +50,17 @@ success_response <- function(response, data) {
 # Create application
 app <- Application$new()
 
-# Add middleware for logging
-app$add_middleware(
-  Middleware$new(
-    process_request = function(request, response) {
-      cat(sprintf("[%s] %s %s\n", 
-                  Sys.time(), 
-                  request$method, 
-                  request$path))
-    }
-  )
-)
+# Add middleware for logging (commented out due to compatibility issues)
+# app$add_middleware(
+#   Middleware$new(
+#     process_request = function(request, response) {
+#       cat(sprintf("[%s] %s %s\n", 
+#                   Sys.time(), 
+#                   request$method, 
+#                   request$path))
+#     }
+#   )
+# )
 
 # Health check endpoint
 app$add_get(
@@ -114,7 +114,7 @@ app$add_post(
       body <- parse_request_body(request)
       
       # Get function name and arguments
-      func_name <- body$function
+      func_name <- body$func
       args <- body$args
       
       if (is.null(func_name)) {
@@ -139,7 +139,7 @@ app$add_post(
       }
       
       success_response(response, list(
-        function = func_name,
+        func = func_name,
         result = result,
         class = class(result)
       ))

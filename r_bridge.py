@@ -119,20 +119,20 @@ async def r_execute(code: str) -> Dict[str, Any]:
 
 @server.tool()
 async def r_call(
-    function: str,
+    func: str,
     args: Optional[Union[List[Any], Dict[str, Any]]] = None
 ) -> Dict[str, Any]:
     """
     Call an R function with arguments
     
     Args:
-        function: Name of the R function to call
+        func: Name of the R function to call
         args: Arguments to pass to the function (list or dict)
         
     Returns:
         Function result
     """
-    payload = {"function": function}
+    payload = {"func": func}
     if args is not None:
         payload["args"] = args
     
