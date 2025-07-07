@@ -4,8 +4,7 @@ R MCP Bridge - A clean, extensible bridge between R and MCP
 
 import asyncio
 import httpx
-from typing import Dict, Any, Optional, List, Union
-from abc import ABC, abstractmethod
+from typing import Dict, Any, Optional, List
 import os
 
 from fastmcp import FastMCP
@@ -40,7 +39,7 @@ async def ensure_api_running():
     """Ensure the R API is running, raise error if not"""
     if not await check_api_health():
         raise RBridgeError(
-            f"R API server is not running. Please start it with: Rscript base_r_api.R"
+            f"R API server is not running. Please start it with: Rscript r_api.R"
         )
 
 
@@ -104,52 +103,49 @@ async def r_status() -> Dict[str, Any]:
 
 
 @server.tool()
-async def r_execute(code: str) -> Dict[str, Any]:
+async def r_hello(name: Optional[str] = None) -> Dict[str, Any]:
     """
-    Execute arbitrary R code
+    Send a greeting to R
     
     Args:
-        code: R code to execute
+        name: Name to greet (default: "World")
         
     Returns:
-        Execution result and output
+        Greeting message from R
     """
-    return await call_r_api("/api/execute", {"code": code})
+    payload = {}
+    if name is not None:
+        payload["name"] = name
+    
+    return await call_r_api("/api/hello", payload)
 
 
 @server.tool()
-async def r_call(
-    func: str,
-    args: Optional[Union[List[Any], Dict[str, Any]]] = None
-) -> Dict[str, Any]:
+async def r_add(a: float = 0, b: float = 0) -> Dict[str, Any]:
     """
-    Call an R function with arguments
+    Add two numbers using R
     
     Args:
-        func: Name of the R function to call
-        args: Arguments to pass to the function (list or dict)
+        a: First number (default: 0)
+        b: Second number (default: 0)
         
     Returns:
-        Function result
+        Addition result
     """
-    payload = {"func": func}
-    if args is not None:
-        payload["args"] = args
-    
-    return await call_r_api("/api/call", payload)
+    return await call_r_api("/api/add", {"a": a, "b": b})
 
 
 @server.tool()
 async def r_stats(
     data: List[float],
-    operation: str = "summary"
+    operation: str = "mean"
 ) -> Dict[str, Any]:
     """
     Perform statistical operations on data
     
     Args:
         data: Numeric data
-        operation: One of: summary, mean, median, sd, var, min, max, sum, quantile, fivenum
+        operation: One of: mean, median, sd, var, min, max, sum
         
     Returns:
         Statistical results
@@ -178,109 +174,6 @@ async def r_lm_simple(
     return await call_r_api("/api/lm", {"x": x, "y": y})
 
 
-@server.tool()
-async def r_lm_formula(
-    formula: str,
-    data: Dict[str, List[Any]]
-) -> Dict[str, Any]:
-    """
-    Perform linear regression with formula
-    
-    Args:
-        formula: R formula string (e.g., "y ~ x1 + x2")
-        data: Dictionary of variables
-        
-    Returns:
-        Regression results
-    """
-    return await call_r_api("/api/lm", {
-        "formula": formula,
-        "data": data
-    })
-
-
-@server.tool()
-async def r_dataframe(
-    data: Dict[str, List[Any]],
-    operation: str = "summary"
-) -> Dict[str, Any]:
-    """
-    Perform operations on data frames
-    
-    Args:
-        data: Dictionary representing a data frame
-        operation: One of: summary, dim, names, head, tail, str
-        
-    Returns:
-        Operation result
-    """
-    return await call_r_api("/api/dataframe", {
-        "data": data,
-        "operation": operation
-    })
-
-
-# Specialized convenience functions
-
-@server.tool()
-async def r_correlation(
-    x: List[float],
-    y: List[float],
-    method: str = "pearson"
-) -> Dict[str, Any]:
-    """
-    Calculate correlation between two variables
-    
-    Args:
-        x: First variable
-        y: Second variable
-        method: Correlation method (pearson, spearman, kendall)
-        
-    Returns:
-        Correlation coefficient and test results
-    """
-    code = f"""
-    x <- c({', '.join(map(str, x))})
-    y <- c({', '.join(map(str, y))})
-    cor.test(x, y, method = "{method}")
-    """
-    return await call_r_api("/api/execute", {"code": code})
-
-
-@server.tool()
-async def r_t_test(
-    x: List[float],
-    y: Optional[List[float]] = None,
-    paired: bool = False,
-    alternative: str = "two.sided"
-) -> Dict[str, Any]:
-    """
-    Perform t-test
-    
-    Args:
-        x: First sample
-        y: Second sample (optional for one-sample test)
-        paired: Whether to perform paired t-test
-        alternative: One of: two.sided, less, greater
-        
-    Returns:
-        T-test results
-    """
-    if y is None:
-        code = f"""
-        x <- c({', '.join(map(str, x))})
-        t.test(x, alternative = "{alternative}")
-        """
-    else:
-        code = f"""
-        x <- c({', '.join(map(str, x))})
-        y <- c({', '.join(map(str, y))})
-        t.test(x, y, paired = {str(paired).upper()}, alternative = "{alternative}")
-        """
-    
-    return await call_r_api("/api/execute", {"code": code})
-
-
 # Cleanup function
 async def cleanup():
     """Cleanup resources on shutdown"""
@@ -295,7 +188,7 @@ def main():
     
     print(f"Starting R MCP Bridge Server...")
     print(f"Connecting to R API at: {R_API_BASE_URL}")
-    print(f"Make sure the R API server is running: Rscript base_r_api.R")
+    print(f"Make sure the R API server is running: Rscript r_api.R")
     
     server.run()
 
