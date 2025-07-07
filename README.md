@@ -55,7 +55,31 @@ python r_bridge.py
 
 Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
-**Option 1: Using uv (Recommended)**
+**Option 1: Using Docker Hub (Easiest)**
+```json
+{
+  "mcpServers": {
+    "r-mcp": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "yourusername/r-mcp-bridge"]
+    }
+  }
+}
+```
+
+**Option 2: Using Local Docker Build**
+```json
+{
+  "mcpServers": {
+    "r-mcp": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "--pull", "always", "r-mcp-bridge:latest"]
+    }
+  }
+}
+```
+
+**Option 3: Using uv (For Development)**
 ```json
 {
   "mcpServers": {
@@ -72,7 +96,7 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 }
 ```
 
-**Option 2: Using Python directly**
+**Option 4: Using Python directly**
 ```json
 {
   "mcpServers": {
@@ -87,7 +111,10 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 }
 ```
 
-Note: Using `uv` is recommended as it automatically handles the virtual environment and dependencies.
+Note: 
+- Docker options require Docker Desktop to be running
+- Use `--pull always` to ensure you have the latest version
+- For development, use uv or Python options
 
 ## Available MCP Tools
 
@@ -249,6 +276,52 @@ The following features are planned for future releases:
 4. Add corresponding MCP tool to `r_bridge.py`
 5. Update this README
 6. Submit a pull request
+
+## Docker Deployment
+
+### Quick Start with Docker Hub
+
+The easiest way to use R MCP Bridge is through Docker Hub:
+
+```bash
+# Pull and run directly (no installation needed!)
+docker run -i --rm yourusername/r-mcp-bridge
+```
+
+That's it! No need to install R, Python, or any dependencies.
+
+### Building Your Own Docker Image
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/r-mcp-bridge.git
+cd r-mcp-bridge
+
+# Build the Docker image
+docker build -f Dockerfile.mcp -t r-mcp-bridge .
+
+# Test locally
+docker run -i --rm r-mcp-bridge
+```
+
+### Publishing to Docker Hub
+
+Use the provided build script for multi-platform support:
+
+```bash
+# Build and push to Docker Hub
+./build-docker-mcp.sh --push
+```
+
+### Docker Image Features
+
+- **Optimized for MCP**: Designed specifically for Claude Desktop integration
+- **Multi-platform**: Supports both Intel and ARM (M1/M2) Macs
+- **Lightweight**: ~400-500MB (optimized from ~800MB)
+- **Self-contained**: Includes both R and Python environments
+- **Secure**: Runs as non-root user with minimal attack surface
+
+See [DOCKER_HUB.md](DOCKER_HUB.md) for detailed Docker Hub deployment guide.
 
 ## License
 

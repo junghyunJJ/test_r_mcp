@@ -1,7 +1,0 @@
-"r-mcp": {
-      "command": "/Users/jungj2/Dropbox/Metadata/mcp/test_r_mcp/.venv/bin/python",
-      "args": [
-        "/Users/jungj2/Dropbox/Metadata/mcp/test_r_mcp/r_bridge.py"
-      ],
-      "env": {}
-    }

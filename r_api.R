@@ -75,7 +75,7 @@ app$add_post(
     FUN = function(request, response) {
         tryCatch({
             body <- parse_request_body(request)
-            name <- body$name %||% "World"
+            name <- if(is.null(body$name)) "World" else body$name
             
             greeting <- paste("Hello", name, "from R!")
             
@@ -97,8 +97,8 @@ app$add_post(
         tryCatch({
             body <- parse_request_body(request)
             
-            a <- as.numeric(body$a %||% 0)
-            b <- as.numeric(body$b %||% 0)
+            a <- as.numeric(if(is.null(body$a)) 0 else body$a)
+            b <- as.numeric(if(is.null(body$b)) 0 else body$b)
             
             result <- a + b
             
@@ -124,7 +124,7 @@ app$add_post(
             
             # Get data and operation
             data <- as.numeric(body$data)
-            operation <- body$operation %||% "mean"
+            operation <- if(is.null(body$operation)) "mean" else body$operation
             
             if (is.null(data) || length(data) == 0) {
                 error_response(response, "No data provided", 400)
