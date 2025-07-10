@@ -5,6 +5,10 @@ set -e
 
 # Configuration
 DOCKER_USERNAME="${DOCKER_USERNAME:-yourusername}"
+if [ "$DOCKER_USERNAME" = "yourusername" ]; then
+    echo "Warning: Using default username 'yourusername'"
+    echo "Set DOCKER_USERNAME environment variable or edit this script"
+fi
 IMAGE_NAME="${DOCKER_USERNAME}/r-mcp-bridge"
 VERSION="${VERSION:-latest}"
 
