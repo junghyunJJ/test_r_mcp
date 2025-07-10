@@ -1,0 +1,25 @@
+name: Update Docker Hub README
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'DOCKER_HUB.md'
+      - '.github/workflows/docker-readme.yml'
+  workflow_dispatch:
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update Docker Hub Description
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}  # Use password instead of token
+          repository: ${{ secrets.DOCKER_USERNAME }}/r-mcp-bridge
+          readme-filepath: ./DOCKER_HUB.md
+          short-description: "R MCP Bridge - Statistical computing through Model Context Protocol"
